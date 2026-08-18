@@ -118,3 +118,5 @@ app.post('/api/absen', (req, res) => {
     res.status(400).json({ error: "tipe_absen tidak valid. Harus 'datang' atau 'pulang'" });
   }
 });
+
+// end of the logic
