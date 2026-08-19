@@ -5,235 +5,87 @@
 	},
 	"item": [
 		{
-			"name": "1. Authentication",
+			"name": "1. Authentication & Akun",
 			"item": [
+				{
+					"name": "Cek Server",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}/"
+					}
+				},
 				{
 					"name": "Login User",
 					"request": {
 						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"username\": \"tia_guru\",\n    \"password\": \"tia123\"\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/api/login",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"login"
-							]
-						}
-					},
-					"response": []
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {"mode": "raw", "raw": "{\n    \"username\": \"tia_guru\",\n    \"password\": \"tia123\"\n}"},
+						"url": "{{base_url}}/api/login"
+					}
 				},
 				{
-					"name": "Cek Status Server",
+					"name": "Tambah Akun Baru (Admin)",
 					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								""
-							]
-						}
-					},
-					"response": []
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {"mode": "raw", "raw": "{\n    \"username\": \"ortu_siti\",\n    \"password\": \"ortu123\",\n    \"role\": \"ortu\"\n}"},
+						"url": "{{base_url}}/api/users"
+					}
 				}
 			]
 		},
 		{
-			"name": "2. Master Data (GET)",
+			"name": "2. Master Data",
 			"item": [
 				{
-					"name": "Get Users",
+					"name": "Tambah Siswa Baru (Admin)",
 					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/api/users",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"users"
-							]
-						}
-					},
-					"response": []
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {"mode": "raw", "raw": "{\n    \"nis\": \"2026002\",\n    \"nama_siswa\": \"Siti Aminah\",\n    \"kelas_id\": 1,\n    \"orang_tua_id\": 1\n}"},
+						"url": "{{base_url}}/api/siswa"
+					}
 				},
-				{
-					"name": "Get Guru",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/api/guru",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"guru"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get Orang Tua",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/api/orang_tua",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"orang_tua"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get Kelas",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/api/kelas",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"kelas"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get Siswa",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/api/siswa",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"siswa"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get Jadwal Mengajar",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/api/jadwal_mengajar",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"jadwal_mengajar"
-							]
-						}
-					},
-					"response": []
-				}
+				{"name": "Get Users", "request": {"method": "GET", "url": "{{base_url}}/api/users"}},
+				{"name": "Get Guru", "request": {"method": "GET", "url": "{{base_url}}/api/guru"}},
+				{"name": "Get Orang Tua", "request": {"method": "GET", "url": "{{base_url}}/api/orang_tua"}},
+				{"name": "Get Kelas", "request": {"method": "GET", "url": "{{base_url}}/api/kelas"}},
+				{"name": "Get Siswa", "request": {"method": "GET", "url": "{{base_url}}/api/siswa"}},
+				{"name": "Get Jadwal Mengajar", "request": {"method": "GET", "url": "{{base_url}}/api/jadwal_mengajar"}}
 			]
 		},
 		{
 			"name": "3. Transaksi Absensi",
 			"item": [
 				{
-					"name": "Get Absensi Siswa",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/api/absensi_siswa",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"absensi_siswa"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get Absensi Guru",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/api/absensi_guru",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"absensi_guru"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Mesin Tap Kartu (Datang/Pulang)",
+					"name": "QR Scan Datang",
 					"request": {
 						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"siswa_id\": 1,\n    \"tipe_absen\": \"datang\"\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/api/absen",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"absen"
-							]
-						}
-					},
-					"response": []
-				}
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {"mode": "raw", "raw": "{\n    \"nis\": \"2026001\",\n    \"tipe_absen\": \"datang\"\n}"},
+						"url": "{{base_url}}/api/absen"
+					}
+				},
+				{
+					"name": "Input Manual Guru (Sakit)",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {"mode": "raw", "raw": "{\n    \"nis\": \"2026001\",\n    \"tipe_absen\": \"datang\",\n    \"status_kehadiran\": \"sakit\"\n}"},
+						"url": "{{base_url}}/api/absen"
+					}
+				},
+				{
+					"name": "QR Scan Pulang",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {"mode": "raw", "raw": "{\n    \"nis\": \"2026001\",\n    \"tipe_absen\": \"pulang\"\n}"},
+						"url": "{{base_url}}/api/absen"
+					}
+				},
+				{"name": "Get Absensi Siswa", "request": {"method": "GET", "url": "{{base_url}}/api/absensi_siswa"}},
+				{"name": "Get Absensi Guru", "request": {"method": "GET", "url": "{{base_url}}/api/absensi_guru"}}
 			]
 		}
 	]
