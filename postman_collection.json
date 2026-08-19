@@ -1,149 +1,240 @@
 {
 	"info": {
-		"name": "Workshop API Absensi Frontend",
+		"name": "Sistem Absensi Terintegrasi API",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
 		{
-			"name": "1. Cek Server",
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "https://backend-absensi-production-1702.up.railway.app/",
-					"protocol": "https",
-					"host": [
-						"backend-absensi-production-1702",
-						"up",
-						"railway",
-						"app"
-					],
-					"path": [
-						""
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "2. Get Kelas",
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "https://backend-absensi-production-1702.up.railway.app/api/kelas",
-					"protocol": "https",
-					"host": [
-						"backend-absensi-production-1702",
-						"up",
-						"railway",
-						"app"
-					],
-					"path": [
-						"api",
-						"kelas"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "3. Get Guru",
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "https://backend-absensi-production-1702.up.railway.app/api/guru",
-					"protocol": "https",
-					"host": [
-						"backend-absensi-production-1702",
-						"up",
-						"railway",
-						"app"
-					],
-					"path": [
-						"api",
-						"guru"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "4. Get Siswa",
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "https://backend-absensi-production-1702.up.railway.app/api/siswa",
-					"protocol": "https",
-					"host": [
-						"backend-absensi-production-1702",
-						"up",
-						"railway",
-						"app"
-					],
-					"path": [
-						"api",
-						"siswa"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "5. Get Orang Tua",
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "https://backend-absensi-production-1702.up.railway.app/api/orang_tua",
-					"protocol": "https",
-					"host": [
-						"backend-absensi-production-1702",
-						"up",
-						"railway",
-						"app"
-					],
-					"path": [
-						"api",
-						"orang_tua"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "6. Tap Absen Datang/Pulang (POST)",
-			"request": {
-				"method": "POST",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json",
-						"type": "text"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n    \"siswa_id\": 1,\n    \"tipe_absen\": \"datang\"\n}"
+			"name": "1. Authentication",
+			"item": [
+				{
+					"name": "Login User",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"tia_guru\",\n    \"password\": \"tia123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"login"
+							]
+						}
+					},
+					"response": []
 				},
-				"url": {
-					"raw": "https://backend-absensi-production-1702.up.railway.app/api/absen",
-					"protocol": "https",
-					"host": [
-						"backend-absensi-production-1702",
-						"up",
-						"railway",
-						"app"
-					],
-					"path": [
-						"api",
-						"absen"
-					]
+				{
+					"name": "Cek Status Server",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								""
+							]
+						}
+					},
+					"response": []
 				}
-			},
-			"response": []
+			]
+		},
+		{
+			"name": "2. Master Data (GET)",
+			"item": [
+				{
+					"name": "Get Users",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/users",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Guru",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/guru",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"guru"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Orang Tua",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/orang_tua",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"orang_tua"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Kelas",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/kelas",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"kelas"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Siswa",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/siswa",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"siswa"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Jadwal Mengajar",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/jadwal_mengajar",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"jadwal_mengajar"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "3. Transaksi Absensi",
+			"item": [
+				{
+					"name": "Get Absensi Siswa",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/absensi_siswa",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"absensi_siswa"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Absensi Guru",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/absensi_guru",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"absensi_guru"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Mesin Tap Kartu (Datang/Pulang)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"siswa_id\": 1,\n    \"tipe_absen\": \"datang\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/absen",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"absen"
+							]
+						}
+					},
+					"response": []
+				}
+			]
 		}
 	]
 }
