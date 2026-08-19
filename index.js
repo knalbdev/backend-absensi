@@ -23,15 +23,49 @@ db.connect((err) => {
 });
 
 // ==========================================
-// ENDPOINT / ROUTING UTAMA
+// ENDPOINT FITUR LOGIN
 // ==========================================
+app.post('/api/login', (req, res) => {
+  const { username, password } = req.body;
 
-// 1. Endpoint Test Server
+  // 1. Validasi input kosong
+  if (!username || !password) {
+    return res.status(400).json({ error: "Username dan password tidak boleh kosong!" });
+  }
+
+  // 2. Cari user di database
+  const query = "SELECT id, username, role FROM users WHERE username = ? AND password = ?";
+  db.query(query, [username, password], (err, results) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ error: "Terjadi kesalahan pada server" });
+    }
+
+    // 3. Jika user tidak ditemukan atau password salah
+    if (results.length === 0) {
+      return res.status(401).json({ error: "Username atau password salah!" });
+    }
+
+    // 4. Jika berhasil login, kirim data user ke Frontend
+    const user = results[0];
+    res.json({
+      pesan: "Login berhasil!",
+      data: {
+        user_id: user.id,
+        username: user.username,
+        role: user.role
+      }
+    });
+  });
+});
+
+// ==========================================
+// ENDPOINT / ROUTING DATA GET
+// ==========================================
 app.get('/', (req, res) => {
   res.json({ message: "Halo! Server Backend Absensi Siap Digunakan!" });
 });
 
-// 2. Endpoint Get Data Users[cite: 1]
 app.get('/api/users', (req, res) => {
   db.query("SELECT * FROM users", (err, results) => {
     if (err) return res.status(500).json({ error: "Gagal ngambil data users" });
@@ -39,7 +73,6 @@ app.get('/api/users', (req, res) => {
   });
 });
 
-// 3. Endpoint Get Data Orang Tua[cite: 1]
 app.get('/api/orang_tua', (req, res) => {
   db.query("SELECT * FROM orang_tua", (err, results) => {
     if (err) return res.status(500).json({ error: "Gagal ngambil data orang tua" });
@@ -47,7 +80,6 @@ app.get('/api/orang_tua', (req, res) => {
   });
 });
 
-// 4. Endpoint Get Data Guru[cite: 1]
 app.get('/api/guru', (req, res) => {
   db.query("SELECT * FROM guru", (err, results) => {
     if (err) return res.status(500).json({ error: "Gagal ngambil data guru" });
@@ -55,7 +87,6 @@ app.get('/api/guru', (req, res) => {
   });
 });
 
-// 5. Endpoint Get Data Kelas[cite: 1]
 app.get('/api/kelas', (req, res) => {
   db.query("SELECT * FROM kelas", (err, results) => {
     if (err) return res.status(500).json({ error: "Gagal ngambil data kelas" });
@@ -63,7 +94,6 @@ app.get('/api/kelas', (req, res) => {
   });
 });
 
-// 6. Endpoint Get Data Siswa[cite: 1]
 app.get('/api/siswa', (req, res) => {
   db.query("SELECT * FROM siswa", (err, results) => {
     if (err) return res.status(500).json({ error: "Gagal ngambil data siswa" });
@@ -71,7 +101,6 @@ app.get('/api/siswa', (req, res) => {
   });
 });
 
-// 7. Endpoint Get Jadwal Mengajar[cite: 1]
 app.get('/api/jadwal_mengajar', (req, res) => {
   db.query("SELECT * FROM jadwal_mengajar", (err, results) => {
     if (err) return res.status(500).json({ error: "Gagal ngambil data jadwal" });
@@ -79,7 +108,6 @@ app.get('/api/jadwal_mengajar', (req, res) => {
   });
 });
 
-// 8. Endpoint Get Data Absensi Siswa[cite: 1]
 app.get('/api/absensi_siswa', (req, res) => {
   db.query("SELECT * FROM absensi_siswa", (err, results) => {
     if (err) return res.status(500).json({ error: "Gagal ngambil data absensi siswa" });
@@ -87,7 +115,6 @@ app.get('/api/absensi_siswa', (req, res) => {
   });
 });
 
-// 9. Endpoint Get Data Absensi Guru[cite: 1]
 app.get('/api/absensi_guru', (req, res) => {
   db.query("SELECT * FROM absensi_guru", (err, results) => {
     if (err) return res.status(500).json({ error: "Gagal ngambil data absensi guru" });
