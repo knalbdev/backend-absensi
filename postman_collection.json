@@ -1,0 +1,149 @@
+{
+	"info": {
+		"name": "Workshop API Absensi Frontend",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "1. Cek Server",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://backend-absensi-production-1702.up.railway.app/",
+					"protocol": "https",
+					"host": [
+						"backend-absensi-production-1702",
+						"up",
+						"railway",
+						"app"
+					],
+					"path": [
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "2. Get Kelas",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://backend-absensi-production-1702.up.railway.app/api/kelas",
+					"protocol": "https",
+					"host": [
+						"backend-absensi-production-1702",
+						"up",
+						"railway",
+						"app"
+					],
+					"path": [
+						"api",
+						"kelas"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "3. Get Guru",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://backend-absensi-production-1702.up.railway.app/api/guru",
+					"protocol": "https",
+					"host": [
+						"backend-absensi-production-1702",
+						"up",
+						"railway",
+						"app"
+					],
+					"path": [
+						"api",
+						"guru"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "4. Get Siswa",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://backend-absensi-production-1702.up.railway.app/api/siswa",
+					"protocol": "https",
+					"host": [
+						"backend-absensi-production-1702",
+						"up",
+						"railway",
+						"app"
+					],
+					"path": [
+						"api",
+						"siswa"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "5. Get Orang Tua",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://backend-absensi-production-1702.up.railway.app/api/orang_tua",
+					"protocol": "https",
+					"host": [
+						"backend-absensi-production-1702",
+						"up",
+						"railway",
+						"app"
+					],
+					"path": [
+						"api",
+						"orang_tua"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "6. Tap Absen Datang/Pulang (POST)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"siswa_id\": 1,\n    \"tipe_absen\": \"datang\"\n}"
+				},
+				"url": {
+					"raw": "https://backend-absensi-production-1702.up.railway.app/api/absen",
+					"protocol": "https",
+					"host": [
+						"backend-absensi-production-1702",
+						"up",
+						"railway",
+						"app"
+					],
+					"path": [
+						"api",
+						"absen"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
