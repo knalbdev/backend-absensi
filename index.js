@@ -23,17 +23,15 @@ db.connect((err) => {
 });
 
 // ==========================================
-// ENDPOINT FITUR LOGIN
+// ENDPOINT FITUR LOGIN & AKUN
 // ==========================================
 app.post('/api/login', (req, res) => {
-  const { username, password } = req.body;
+  const { username, password } = req.body || {};
 
-  // 1. Validasi input kosong
   if (!username || !password) {
     return res.status(400).json({ error: "Username dan password tidak boleh kosong!" });
   }
 
-  // 2. Cari user di database
   const query = "SELECT id, username, role FROM users WHERE username = ? AND password = ?";
   db.query(query, [username, password], (err, results) => {
     if (err) {
@@ -41,12 +39,10 @@ app.post('/api/login', (req, res) => {
       return res.status(500).json({ error: "Terjadi kesalahan pada server" });
     }
 
-    // 3. Jika user tidak ditemukan atau password salah
     if (results.length === 0) {
       return res.status(401).json({ error: "Username atau password salah!" });
     }
 
-    // 4. Jika berhasil login, kirim data user ke Frontend
     const user = results[0];
     res.json({
       pesan: "Login berhasil!",
@@ -54,6 +50,35 @@ app.post('/api/login', (req, res) => {
         user_id: user.id,
         username: user.username,
         role: user.role
+      }
+    });
+  });
+});
+
+app.post('/api/users', (req, res) => {
+  const { username, password, role } = req.body || {};
+
+  if (!username || !password || !role) {
+    return res.status(400).json({ error: "Username, password, dan role tidak boleh kosong!" });
+  }
+
+  const validRoles = ['admin', 'guru', 'ortu'];
+  if (!validRoles.includes(role)) {
+    return res.status(400).json({ error: "Role tidak valid! Harus 'admin', 'guru', atau 'ortu'." });
+  }
+
+  const query = `INSERT INTO users (username, password, role) VALUES (?, ?, ?)`;
+  db.query(query, [username, password, role], (err, results) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ error: "Gagal menyimpan user baru ke database." });
+    }
+    res.status(201).json({
+      pesan: "Berhasil menambahkan user baru!",
+      data: {
+        id: results.insertId,
+        username: username,
+        role: role
       }
     });
   });
@@ -123,45 +148,59 @@ app.get('/api/absensi_guru', (req, res) => {
 });
 
 // ==========================================
-// ENDPOINT ABSENSI MESIN TAP KARTU
+// ENDPOINT ABSENSI (MESIN QR & INPUT GURU)
 // ==========================================
 app.post('/api/absen', (req, res) => {
-  const { siswa_id, tipe_absen } = req.body; 
+  // FE sekarang mengirim 'nis' (dari mesin QR) 
+  // dan 'status_kehadiran' (dari input manual Guru)
+  const { nis, tipe_absen, status_kehadiran } = req.body || {}; 
   
-  if (!siswa_id || !tipe_absen) {
-    return res.status(400).json({ error: "Data siswa_id atau tipe_absen tidak boleh kosong" });
+  if (!nis || !tipe_absen) {
+    return res.status(400).json({ error: "Data NIS atau tipe_absen tidak boleh kosong" });
   }
 
-  const sekarang = new Date();
-  const tanggal = sekarang.toISOString().split('T')[0];
-  const jam = sekarang.toTimeString().split(' ')[0]; 
+  // 1. Cari siswa_id berdasarkan NIS yang di-scan QR
+  db.query("SELECT id FROM siswa WHERE nis = ?", [nis], (err, results) => {
+    if (err) return res.status(500).json({ error: "Gagal mencari data siswa" });
+    if (results.length === 0) return res.status(404).json({ error: "Siswa dengan NIS tersebut tidak ditemukan!" });
 
-  if (tipe_absen === 'datang') {
-    const query = `INSERT INTO absensi_siswa (siswa_id, tanggal, jam_datang, status) VALUES (?, ?, ?, 'hadir')`;
-    db.query(query, [siswa_id, tanggal, jam], (err, results) => {
-      if (err) {
-        console.error(err);
-        return res.status(500).json({ error: "Gagal mencatat jam datang ke database" });
-      }
-      res.json({ pesan: "Berhasil mencatat jam datang siswa!", siswa_id: siswa_id, waktu_datang: jam });
-    });
+    const siswa_id = results[0].id; // Dapat ID aslinya
+    
+    // Jika tidak ada status dari FE (berarti tap dari mesin), set default 'hadir'
+    const status_final = status_kehadiran || 'hadir'; 
+    const sekarang = new Date();
+    const tanggal = sekarang.toISOString().split('T')[0];
+    const jam = sekarang.toTimeString().split(' ')[0]; 
 
-  } else if (tipe_absen === 'pulang') {
-    const query = `UPDATE absensi_siswa SET jam_pulang = ? WHERE siswa_id = ? AND tanggal = ?`;
-    db.query(query, [jam, siswa_id, tanggal], (err, results) => {
-      if (err) {
-        console.error(err);
-        return res.status(500).json({ error: "Gagal mencatat jam pulang ke database" });
-      }
-      if (results.affectedRows === 0) {
-          return res.status(404).json({ error: "Gagal absen pulang. Siswa belum absen datang hari ini."});
-      }
-      res.json({ pesan: "Berhasil mencatat jam pulang siswa!", siswa_id: siswa_id, waktu_pulang: jam });
-    });
+    // 2. Logika Tap Datang / Input Datang
+    if (tipe_absen === 'datang') {
+      const query = `INSERT INTO absensi_siswa (siswa_id, tanggal, jam_datang, status) VALUES (?, ?, ?, ?)`;
+      db.query(query, [siswa_id, tanggal, jam, status_final], (err, insertResult) => {
+        if (err) {
+          console.error(err);
+          return res.status(500).json({ error: "Gagal mencatat jam datang ke database" });
+        }
+        res.json({ pesan: `Berhasil mencatat absen datang (${status_final})!`, nis: nis, waktu_datang: jam });
+      });
 
-  } else {
-    res.status(400).json({ error: "tipe_absen tidak valid. Harus 'datang' atau 'pulang'" });
-  }
+    // 3. Logika Tap Pulang
+    } else if (tipe_absen === 'pulang') {
+      const query = `UPDATE absensi_siswa SET jam_pulang = ? WHERE siswa_id = ? AND tanggal = ?`;
+      db.query(query, [jam, siswa_id, tanggal], (err, updateResult) => {
+        if (err) {
+          console.error(err);
+          return res.status(500).json({ error: "Gagal mencatat jam pulang ke database" });
+        }
+        if (updateResult.affectedRows === 0) {
+            return res.status(404).json({ error: "Gagal absen pulang. Siswa belum absen datang hari ini."});
+        }
+        res.json({ pesan: "Berhasil mencatat jam pulang!", nis: nis, waktu_pulang: jam });
+      });
+
+    } else {
+      res.status(400).json({ error: "tipe_absen tidak valid. Harus 'datang' atau 'pulang'" });
+    }
+  });
 });
 
 // ==========================================
