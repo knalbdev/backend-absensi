@@ -10,12 +10,14 @@ app.use(cors());
 app.use(express.json());
 
 // KONEKSI KE DATABASE XAMPP
-const db = mysql.createConnection({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME
-});
+// KONEKSI KE DATABASE RAILWAY
+const db = mysql.createConnection(process.env.DB_URL);
+// const db = mysql.createConnection({
+//   host: process.env.DB_HOST,
+//   user: process.env.DB_USER,
+//   password: process.env.DB_PASSWORD,
+//   database: process.env.DB_NAME
+// });
 
 db.connect((err) => {
   if (err) {
