@@ -1,0 +1,43 @@
+Bertindaklah sebagai Senior Web Frontend Developer. Tugasmu adalah membuatkan kode Frontend untuk "Sistem Absensi Terintegrasi" sebuah sekolah kejuruan (RPL). 
+
+Gunakan tech stack berikut: HTML5, Tailwind CSS (via CDN), dan Vanilla JavaScript (Fetch API). Buatkan desain yang modern, responsif (mobile-friendly), dan rapi.
+
+Backend API sudah live dan siap dikonsumsi di Base URL: `https://backend-absensi-production-1702.up.railway.app`
+
+Berikut adalah spesifikasi fitur dan Role yang harus kamu buatkan halamannya:
+
+1. FITUR LOGIN & AUTENTIKASI (index.html)
+- Buat halaman Login sederhana dengan form Username dan Password.
+- Saat form di-submit, lakukan HTTP POST ke `/api/login` dengan JSON body.
+- Jika sukses, simpan `user_id`, `username`, dan `role` ke dalam `localStorage`.
+- Berdasarkan `role` (admin / guru / ortu), redirect user ke halaman dashboard yang sesuai.
+- Jika gagal, tampilkan alert error dari response API.
+
+2. DASHBOARD ADMIN (admin.html)
+- Proteksi halaman: jika `localStorage.role !== 'admin'`, kembalikan ke login.
+- Buat layout Sidebar menu: Home, Kelola Akun, Kelola Siswa, Data Master.
+- Fitur Kelola Akun: Form untuk menambah User Baru (Tembak POST `/api/users` dengan payload: username, password, role).
+- Fitur Kelola Siswa: Form untuk menambah Siswa baru (Tembak POST `/api/siswa` dengan payload: nis, nama_siswa, kelas_id, orang_tua_id). 
+- Fitur Data Master: Buatkan UI tabel untuk menampung hasil fetch GET `/api/guru` dan `/api/siswa`.
+
+3. DASHBOARD GURU (guru.html)
+- Proteksi halaman: jika `localStorage.role !== 'guru'`, kembalikan ke login.
+- Tampilkan sapaan menggunakan `username` dari localStorage.
+- Fitur Input Absen Manual (Tabel Kelas): Lakukan HTTP GET ke `/api/siswa`. Render data balasan API tersebut menjadi sebuah Tabel HTML.
+- Di dalam tabel tersebut, buatkan kolom "Aksi Absensi". Setiap baris/nama siswa harus memiliki sebuah `<select>` dropdown (pilihan: Sakit, Izin, Alpa) dan sebuah tombol "Simpan Absen".
+- Logika tombol: Saat tombol "Simpan Absen" diklik pada baris milik seorang siswa, ambil value dropdown-nya, lalu lakukan HTTP POST ke `/api/absen` dengan payload: `{ "nis": "[nis_siswa_di_baris_tersebut]", "tipe_absen": "datang", "status_kehadiran": "[value_dropdown]" }`. Tampilkan toast/alert sukses.
+
+4. DASHBOARD WALI / ORTU (ortu.html)
+- Proteksi halaman: jika `localStorage.role !== 'ortu'`, kembalikan ke login.
+- Fitur Riwayat Absensi: Tabel sederhana yang merender data balasan dari HTTP GET `/api/absensi_siswa`. 
+
+5. HALAMAN SCANNER QR SISWA (scanner.html)
+- Halaman ini tidak perlu login. Berdiri sendiri untuk mode Kiosk/Mesin di gerbang.
+- Gunakan library pihak ketiga `html5-qrcode` (via CDN) untuk mengaktifkan kamera.
+- UI Utama: Layar tangkapan kamera dan 2 tombol toggle besar (MODE DATANG dan MODE PULANG).
+- Logika: Jika kamera berhasil membaca teks QR (berupa string NIS angka), hentikan scan sejenak, lalu otomatis tembak HTTP POST ke `/api/absen` dengan payload `{ "nis": "[hasil_scan_qr]", "tipe_absen": "[mode_yang_sedang_aktif]" }`.
+- Tampilkan pop-up hijau "Berhasil!" atau merah jika error. Setelah 3 detik, reset dan aktifkan kamera lagi.
+
+INSTRUKSI PENGERJAAN:
+Tolong jangan tuliskan semua kode untuk 5 halaman sekaligus karena responsmu akan terpotong. 
+Untuk balasan pertama, tolong buatkan SATU FILE SAJA: `index.html` (beserta struktur CSS/JS-nya) khusus untuk fitur LOGIN. Tunggu instruksiku selanjutnya untuk halaman dashboard yang lain.
