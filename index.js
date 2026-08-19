@@ -47,7 +47,7 @@ app.get('/api/kelas', (req, res) => {
 
 // 3. Endpoint Get Data Guru
 app.get('/api/guru', (req, res) => {
-  const query = "SELECT * FROM absensi_guru";
+  const query = "SELECT * FROM guru";
   db.query(query, (err, results) => {
     if (err) {
       return res.status(500).json({ error: "Gagal ngambil data guru" });
