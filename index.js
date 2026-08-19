@@ -1,126 +1,100 @@
-const express = require('express');
-const mysql = require('mysql2');
-const cors = require('cors');
 require('dotenv').config();
+const express = require('express');
+const mysql = require('mysql');
+const cors = require('cors');
 
 const app = express();
 const port = process.env.PORT || 3000;
 
-app.use(cors());
-app.use(express.json());
+// ==========================================
+// MIDDLEWARE WAJIB UNTUK FRONTEND
+// ==========================================
+// 1. Mengizinkan FE dari domain manapun untuk mengakses API ini (Cegah error CORS)
+app.use(cors()); 
+// 2. Mengizinkan backend membaca data format JSON yang dikirim FE
+app.use(express.json()); 
+// 3. Mengizinkan backend membaca data dari form-urlencoded
+app.use(express.urlencoded({ extended: true }));
 
-// KONEKSI KE DATABASE XAMPP
-// KONEKSI KE DATABASE RAILWAY
+// ==========================================
+// KONEKSI DATABASE RAILWAY
+// ==========================================
 const db = mysql.createConnection(process.env.DB_URL);
-// const db = mysql.createConnection({
-//   host: process.env.DB_HOST,
-//   user: process.env.DB_USER,
-//   password: process.env.DB_PASSWORD,
-//   database: process.env.DB_NAME
-// });
 
 db.connect((err) => {
-  if (err) {
-    console.error('Yah, Gagal nyambung ke database:', err);
-    return;
-  }
-  console.log('Mantap! Berhasil terhubung ke database XAMPP.');
-});
-
-// ==========================================
-// ENDPOINT / ROUTING KITA TARUH DI SINI
-// ==========================================
-
-// 1. Endpoint Test Server
-app.get('/', (req, res) => {
-  res.json({ message: "Halo! Server Backend Absensi Siap Digunakan!" });
-});
-
-// 2. Endpoint Test Ambil Data Kelas dari Database
-app.get('/api/kelas', (req, res) => {
-  const query = "SELECT * FROM kelas";
-  db.query(query, (err, results) => {
     if (err) {
-      return res.status(500).json({ error: "Gagal ngambil data" });
+        console.error('Gagal koneksi ke database:', err);
+    } else {
+        console.log('Berhasil terhubung ke database MySQL Railway!');
     }
-    res.json({
-      pesan: "Berhasil mengambil data kelas",
-      data: results
-    });
-  });
 });
 
 // ==========================================
+// ROUTES / ENDPOINTS API
+// ==========================================
 
+// 1. Endpoint Root (Cek Status Server)
+app.get('/', (req, res) => {
+    res.json({ message: "Halo! Server Backend Absensi Siap Digunakan!" });
+});
+
+// 2. Endpoint Get Data Kelas
+app.get('/api/kelas', (req, res) => {
+    const query = 'SELECT * FROM kelas'; // Sesuaikan nama tabel jika berbeda
+    db.query(query, (err, results) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).json({ pesan: "Gagal mengambil data kelas", error: err.message });
+        }
+        res.json({
+            pesan: "Berhasil mengambil data kelas",
+            data: results
+        });
+    });
+});
+
+// 3. Endpoint Get Data Guru
+app.get('/api/guru', (req, res) => {
+    const query = 'SELECT * FROM absensi_guru'; // Sesuaikan nama tabel jika berbeda
+    db.query(query, (err, results) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).json({ pesan: "Gagal mengambil data guru", error: err.message });
+        }
+        res.json({
+            pesan: "Berhasil mengambil data guru",
+            data: results
+        });
+    });
+});
+
+// 4. Endpoint Post Data Absensi (Contoh untuk menerima data dari FE)
+app.post('/api/absensi', (req, res) => {
+    // Menangkap data yang dikirim oleh FE
+    const { id_guru, id_kelas, status, tanggal } = req.body;
+
+    // Validasi sederhana
+    if (!id_guru || !id_kelas || !status) {
+        return res.status(400).json({ pesan: "Data absensi tidak lengkap!" });
+    }
+
+    // Contoh query insert (Pastikan kamu sudah membuat tabel 'absensi' di database)
+    const query = 'INSERT INTO absensi (id_guru, id_kelas, status, tanggal) VALUES (?, ?, ?, ?)';
+    db.query(query, [id_guru, id_kelas, status, tanggal], (err, results) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).json({ pesan: "Gagal menyimpan absensi", error: err.message });
+        }
+        res.status(201).json({
+            pesan: "Absensi berhasil disimpan!",
+            data: { id_insert: results.insertId, id_guru, id_kelas, status }
+        });
+    });
+});
+
+// ==========================================
+// JALANKAN SERVER
+// ==========================================
 app.listen(port, () => {
-  console.log(`Server nyala! Coba buka http://localhost:${port}`);
+    console.log(`Server menyala dan berjalan di port ${port}`);
 });
-
-// ==========================================
-// ENDPOINT ABSENSI SISWA
-// ==========================================
-app.post('/api/absen', (req, res) => {
-  // Mengambil data yang dikirim oleh aplikasi frontend/mesin tap kartu
-  const { siswa_id, tipe_absen } = req.body; 
-  
-  // Memastikan data yang dikirim tidak kosong
-  if (!siswa_id || !tipe_absen) {
-    return res.status(400).json({ error: "Data siswa_id atau tipe_absen tidak boleh kosong" });
-  }
-
-  // Mendapatkan waktu saat ini
-  const sekarang = new Date();
-  const tanggal = sekarang.toISOString().split('T')[0]; // Format: YYYY-MM-DD
-  
-  // Format jam ke HH:MM:SS sesuai zona waktu server
-  const jam = sekarang.toTimeString().split(' ')[0]; 
-
-  if (tipe_absen === 'datang') {
-    // Logika jika siswa baru datang
-    const query = `INSERT INTO absensi_siswa (siswa_id, tanggal, jam_datang, status) VALUES (?, ?, ?, 'hadir')`;
-    
-    db.query(query, [siswa_id, tanggal, jam], (err, results) => {
-      if (err) {
-        console.error(err);
-        return res.status(500).json({ error: "Gagal mencatat jam datang ke database" });
-      }
-      
-      // Catatan: Nanti kita panggil fungsi kirim Email di sini
-      res.json({ 
-        pesan: "Berhasil mencatat jam datang siswa!", 
-        siswa_id: siswa_id,
-        waktu_datang: jam 
-      });
-    });
-
-  } else if (tipe_absen === 'pulang') {
-    // Logika jika siswa pulang (mengupdate baris yang sudah ada hari ini)
-    const query = `UPDATE absensi_siswa SET jam_pulang = ? WHERE siswa_id = ? AND tanggal = ?`;
-    
-    db.query(query, [jam, siswa_id, tanggal], (err, results) => {
-      if (err) {
-        console.error(err);
-        return res.status(500).json({ error: "Gagal mencatat jam pulang ke database" });
-      }
-      
-      if (results.affectedRows === 0) {
-          return res.status(404).json({ error: "Gagal absen pulang. Siswa belum absen datang hari ini."});
-      }
-
-      // Catatan: Nanti kita panggil fungsi kirim Email di sini
-      res.json({ 
-        pesan: "Berhasil mencatat jam pulang siswa!", 
-        siswa_id: siswa_id,
-        waktu_pulang: jam 
-      });
-    });
-
-  } else {
-    // Jika tipe absen salah ketik
-    res.status(400).json({ error: "tipe_absen tidak valid. Harus 'datang' atau 'pulang'" });
-  }
-});
-
-// end of the logic
-
-// end of the code
