@@ -1,5 +1,5 @@
 const express = require('express');
-const mysql = require('mysql2'); // Kembali menggunakan mysql2 sesuai aslinya
+const mysql = require('mysql2'); 
 const cors = require('cors');
 require('dotenv').config();
 
@@ -23,7 +23,7 @@ db.connect((err) => {
 });
 
 // ==========================================
-// ENDPOINT / ROUTING
+// ENDPOINT / ROUTING UTAMA
 // ==========================================
 
 // 1. Endpoint Test Server
@@ -31,35 +31,73 @@ app.get('/', (req, res) => {
   res.json({ message: "Halo! Server Backend Absensi Siap Digunakan!" });
 });
 
-// 2. Endpoint Get Data Kelas
-app.get('/api/kelas', (req, res) => {
-  const query = "SELECT * FROM kelas";
-  db.query(query, (err, results) => {
-    if (err) {
-      return res.status(500).json({ error: "Gagal ngambil data kelas" });
-    }
-    res.json({
-      pesan: "Berhasil mengambil data kelas",
-      data: results
-    });
+// 2. Endpoint Get Data Users[cite: 1]
+app.get('/api/users', (req, res) => {
+  db.query("SELECT * FROM users", (err, results) => {
+    if (err) return res.status(500).json({ error: "Gagal ngambil data users" });
+    res.json({ pesan: "Berhasil mengambil data users", data: results });
   });
 });
 
-// 3. Endpoint Get Data Guru
+// 3. Endpoint Get Data Orang Tua[cite: 1]
+app.get('/api/orang_tua', (req, res) => {
+  db.query("SELECT * FROM orang_tua", (err, results) => {
+    if (err) return res.status(500).json({ error: "Gagal ngambil data orang tua" });
+    res.json({ pesan: "Berhasil mengambil data orang tua", data: results });
+  });
+});
+
+// 4. Endpoint Get Data Guru[cite: 1]
 app.get('/api/guru', (req, res) => {
-  const query = "SELECT * FROM guru";
-  db.query(query, (err, results) => {
-    if (err) {
-      return res.status(500).json({ error: "Gagal ngambil data guru" });
-    }
-    res.json({
-      pesan: "Berhasil mengambil data guru",
-      data: results
-    });
+  db.query("SELECT * FROM guru", (err, results) => {
+    if (err) return res.status(500).json({ error: "Gagal ngambil data guru" });
+    res.json({ pesan: "Berhasil mengambil data guru", data: results });
   });
 });
 
-// 4. Endpoint Absensi Mesin Tap Kartu
+// 5. Endpoint Get Data Kelas[cite: 1]
+app.get('/api/kelas', (req, res) => {
+  db.query("SELECT * FROM kelas", (err, results) => {
+    if (err) return res.status(500).json({ error: "Gagal ngambil data kelas" });
+    res.json({ pesan: "Berhasil mengambil data kelas", data: results });
+  });
+});
+
+// 6. Endpoint Get Data Siswa[cite: 1]
+app.get('/api/siswa', (req, res) => {
+  db.query("SELECT * FROM siswa", (err, results) => {
+    if (err) return res.status(500).json({ error: "Gagal ngambil data siswa" });
+    res.json({ pesan: "Berhasil mengambil data siswa", data: results });
+  });
+});
+
+// 7. Endpoint Get Jadwal Mengajar[cite: 1]
+app.get('/api/jadwal_mengajar', (req, res) => {
+  db.query("SELECT * FROM jadwal_mengajar", (err, results) => {
+    if (err) return res.status(500).json({ error: "Gagal ngambil data jadwal" });
+    res.json({ pesan: "Berhasil mengambil jadwal mengajar", data: results });
+  });
+});
+
+// 8. Endpoint Get Data Absensi Siswa[cite: 1]
+app.get('/api/absensi_siswa', (req, res) => {
+  db.query("SELECT * FROM absensi_siswa", (err, results) => {
+    if (err) return res.status(500).json({ error: "Gagal ngambil data absensi siswa" });
+    res.json({ pesan: "Berhasil mengambil data absensi siswa", data: results });
+  });
+});
+
+// 9. Endpoint Get Data Absensi Guru[cite: 1]
+app.get('/api/absensi_guru', (req, res) => {
+  db.query("SELECT * FROM absensi_guru", (err, results) => {
+    if (err) return res.status(500).json({ error: "Gagal ngambil data absensi guru" });
+    res.json({ pesan: "Berhasil mengambil data absensi guru", data: results });
+  });
+});
+
+// ==========================================
+// ENDPOINT ABSENSI MESIN TAP KARTU
+// ==========================================
 app.post('/api/absen', (req, res) => {
   const { siswa_id, tipe_absen } = req.body; 
   
