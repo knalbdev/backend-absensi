@@ -23,7 +23,7 @@ db.connect((err) => {
 });
 
 // ==========================================
-// ENDPOINT FITUR LOGIN & AKUN
+// ENDPOINT FITUR LOGIN & TAMBAH AKUN (USERS)
 // ==========================================
 app.post('/api/login', (req, res) => {
   const { username, password } = req.body || {};
@@ -55,6 +55,7 @@ app.post('/api/login', (req, res) => {
   });
 });
 
+// Admin Menambah Akun User Baru (Guru/Ortu)
 app.post('/api/users', (req, res) => {
   const { username, password, role } = req.body || {};
 
@@ -85,11 +86,39 @@ app.post('/api/users', (req, res) => {
 });
 
 // ==========================================
-// ENDPOINT / ROUTING DATA GET
+// ENDPOINT MASTER DATA (TAMBAH SISWA)
 // ==========================================
-app.get('/', (req, res) => {
-  res.json({ message: "Halo! Server Backend Absensi Siap Digunakan!" });
+// Admin Menambah Siswa Baru
+app.post('/api/siswa', (req, res) => {
+  const { nis, nama_siswa, kelas_id, orang_tua_id } = req.body || {};
+
+  if (!nis || !nama_siswa || !kelas_id || !orang_tua_id) {
+    return res.status(400).json({ error: "Data NIS, Nama, Kelas ID, dan Orang Tua ID tidak boleh kosong!" });
+  }
+
+  const query = `INSERT INTO siswa (nis, nama_siswa, kelas_id, orang_tua_id) VALUES (?, ?, ?, ?)`;
+  db.query(query, [nis, nama_siswa, kelas_id, orang_tua_id], (err, results) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ error: "Gagal menyimpan data siswa baru ke database." });
+    }
+    res.status(201).json({
+      pesan: "Berhasil menambahkan siswa baru!",
+      data: {
+        id: results.insertId,
+        nis: nis,
+        nama_siswa: nama_siswa,
+        kelas_id: kelas_id,
+        orang_tua_id: orang_tua_id
+      }
+    });
+  });
 });
+
+// ==========================================
+// ENDPOINT BACA DATA GET (READ-ONLY)
+// ==========================================
+app.get('/', (req, res) => res.json({ message: "Halo! Server Backend Absensi Siap Digunakan!" }));
 
 app.get('/api/users', (req, res) => {
   db.query("SELECT * FROM users", (err, results) => {
@@ -151,28 +180,26 @@ app.get('/api/absensi_guru', (req, res) => {
 // ENDPOINT ABSENSI (MESIN QR & INPUT GURU)
 // ==========================================
 app.post('/api/absen', (req, res) => {
-  // FE sekarang mengirim 'nis' (dari mesin QR) 
-  // dan 'status_kehadiran' (dari input manual Guru)
   const { nis, tipe_absen, status_kehadiran } = req.body || {}; 
   
   if (!nis || !tipe_absen) {
     return res.status(400).json({ error: "Data NIS atau tipe_absen tidak boleh kosong" });
   }
 
-  // 1. Cari siswa_id berdasarkan NIS yang di-scan QR
+  // Cari ID siswa dari NIS
   db.query("SELECT id FROM siswa WHERE nis = ?", [nis], (err, results) => {
     if (err) return res.status(500).json({ error: "Gagal mencari data siswa" });
     if (results.length === 0) return res.status(404).json({ error: "Siswa dengan NIS tersebut tidak ditemukan!" });
 
-    const siswa_id = results[0].id; // Dapat ID aslinya
-    
-    // Jika tidak ada status dari FE (berarti tap dari mesin), set default 'hadir'
+    const siswa_id = results[0].id; 
     const status_final = status_kehadiran || 'hadir'; 
-    const sekarang = new Date();
-    const tanggal = sekarang.toISOString().split('T')[0];
-    const jam = sekarang.toTimeString().split(' ')[0]; 
+    
+    // Konversi zona waktu ke WIB (Waktu Indonesia Barat) untuk format jam
+    const waktuSekarang = new Date();
+    waktuSekarang.setHours(waktuSekarang.getHours() + 7);
+    const tanggal = waktuSekarang.toISOString().split('T')[0];
+    const jam = waktuSekarang.toISOString().split('T')[1].split('.')[0]; 
 
-    // 2. Logika Tap Datang / Input Datang
     if (tipe_absen === 'datang') {
       const query = `INSERT INTO absensi_siswa (siswa_id, tanggal, jam_datang, status) VALUES (?, ?, ?, ?)`;
       db.query(query, [siswa_id, tanggal, jam, status_final], (err, insertResult) => {
@@ -183,7 +210,6 @@ app.post('/api/absen', (req, res) => {
         res.json({ pesan: `Berhasil mencatat absen datang (${status_final})!`, nis: nis, waktu_datang: jam });
       });
 
-    // 3. Logika Tap Pulang
     } else if (tipe_absen === 'pulang') {
       const query = `UPDATE absensi_siswa SET jam_pulang = ? WHERE siswa_id = ? AND tanggal = ?`;
       db.query(query, [jam, siswa_id, tanggal], (err, updateResult) => {
@@ -196,7 +222,6 @@ app.post('/api/absen', (req, res) => {
         }
         res.json({ pesan: "Berhasil mencatat jam pulang!", nis: nis, waktu_pulang: jam });
       });
-
     } else {
       res.status(400).json({ error: "tipe_absen tidak valid. Harus 'datang' atau 'pulang'" });
     }
