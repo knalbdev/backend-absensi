@@ -194,34 +194,78 @@ app.post('/api/absen', (req, res) => {
     const siswa_id = results[0].id; 
     const status_final = status_kehadiran || 'hadir'; 
     
-    // Konversi zona waktu ke WIB (Waktu Indonesia Barat) untuk format jam
+    // Konversi zona waktu ke WIB
     const waktuSekarang = new Date();
     waktuSekarang.setHours(waktuSekarang.getHours() + 7);
     const tanggal = waktuSekarang.toISOString().split('T')[0];
     const jam = waktuSekarang.toISOString().split('T')[1].split('.')[0]; 
 
+    // 2. Logika Tap Datang / Input Manual Guru
     if (tipe_absen === 'datang') {
-      const query = `INSERT INTO absensi_siswa (siswa_id, tanggal, jam_datang, status) VALUES (?, ?, ?, ?)`;
-      db.query(query, [siswa_id, tanggal, jam, status_final], (err, insertResult) => {
-        if (err) {
-          console.error(err);
-          return res.status(500).json({ error: "Gagal mencatat jam datang ke database" });
+      // CEK DULU: Apakah siswa sudah punya rekam absen hari ini?
+      const queryCek = `SELECT id FROM absensi_siswa WHERE siswa_id = ? AND tanggal = ?`;
+      db.query(queryCek, [siswa_id, tanggal], (err, rows) => {
+        if (err) return res.status(500).json({ error: "Gagal mengecek data absen" });
+
+        if (rows.length > 0) {
+          // JIKA SUDAH ADA DATA: Guru cuma mau UPDATE status (misal dari Alpa diubah jadi Sakit)
+          const queryUpdate = `UPDATE absensi_siswa SET status = ? WHERE siswa_id = ? AND tanggal = ?`;
+          db.query(queryUpdate, [status_final, siswa_id, tanggal], (err, updateResult) => {
+            if (err) return res.status(500).json({ error: "Gagal mengubah status absen" });
+            res.json({ pesan: `Status absen berhasil diperbarui menjadi ${status_final}!`, nis: nis, status: status_final });
+          });
+          
+        } else {
+          // JIKA BELUM ADA DATA SAMA SEKALI: Insert data baru
+          let queryInsert;
+          let queryParams;
+
+          if (status_final === 'hadir') {
+            queryInsert = `INSERT INTO absensi_siswa (siswa_id, tanggal, jam_datang, status) VALUES (?, ?, ?, ?)`;
+            queryParams = [siswa_id, tanggal, jam, status_final];
+          } else {
+            // Jika Sakit/Izin/Alpa -> jam_datang dibiarkan NULL (kosong)
+            queryInsert = `INSERT INTO absensi_siswa (siswa_id, tanggal, jam_datang, status) VALUES (?, ?, NULL, ?)`;
+            queryParams = [siswa_id, tanggal, status_final];
+          }
+
+          db.query(queryInsert, queryParams, (err, insertResult) => {
+            if (err) {
+              console.error(err);
+              return res.status(500).json({ error: "Gagal mencatat data absensi ke database" });
+            }
+            if (status_final === 'hadir') {
+              res.json({ pesan: "Berhasil mencatat absen datang!", nis: nis, waktu_datang: jam, status: status_final });
+            } else {
+              res.json({ pesan: `Berhasil mencatat siswa ${status_final}!`, nis: nis, waktu_datang: null, status: status_final });
+            }
+          });
         }
-        res.json({ pesan: `Berhasil mencatat absen datang (${status_final})!`, nis: nis, waktu_datang: jam });
       });
 
+    // 3. Logika Tap Pulang
     } else if (tipe_absen === 'pulang') {
-      const query = `UPDATE absensi_siswa SET jam_pulang = ? WHERE siswa_id = ? AND tanggal = ?`;
-      db.query(query, [jam, siswa_id, tanggal], (err, updateResult) => {
-        if (err) {
-          console.error(err);
-          return res.status(500).json({ error: "Gagal mencatat jam pulang ke database" });
+      // Tolak jika tap pulang tapi statusnya bukan hadir
+      const queryCekHadir = `SELECT status FROM absensi_siswa WHERE siswa_id = ? AND tanggal = ?`;
+      db.query(queryCekHadir, [siswa_id, tanggal], (err, cekResults) => {
+        if (err) return res.status(500).json({ error: "Gagal memvalidasi status absen" });
+        
+        if (cekResults.length === 0) {
+          return res.status(404).json({ error: "Gagal absen pulang. Siswa belum absen datang hari ini."});
         }
-        if (updateResult.affectedRows === 0) {
-            return res.status(404).json({ error: "Gagal absen pulang. Siswa belum absen datang hari ini."});
+
+        if (cekResults[0].status !== 'hadir') {
+           return res.status(400).json({ error: `Gagal absen pulang. Status siswa hari ini adalah ${cekResults[0].status}.` });
         }
-        res.json({ pesan: "Berhasil mencatat jam pulang!", nis: nis, waktu_pulang: jam });
+
+        // Lakukan update jam pulang jika valid
+        const queryUpdate = `UPDATE absensi_siswa SET jam_pulang = ? WHERE siswa_id = ? AND tanggal = ?`;
+        db.query(queryUpdate, [jam, siswa_id, tanggal], (err, updateResult) => {
+          if (err) return res.status(500).json({ error: "Gagal mencatat jam pulang ke database" });
+          res.json({ pesan: "Berhasil mencatat jam pulang!", nis: nis, waktu_pulang: jam });
+        });
       });
+
     } else {
       res.status(400).json({ error: "tipe_absen tidak valid. Harus 'datang' atau 'pulang'" });
     }
